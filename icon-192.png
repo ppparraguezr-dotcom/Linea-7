@@ -1,0 +1,14 @@
+{
+  "name": "Línea 7 — Garces Fruit",
+  "short_name": "Línea 7",
+  "description": "Estandarización de embalajes línea 7",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a9450",
+  "orientation": "any",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
