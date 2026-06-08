@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distribuidor de Salidas — Garces Fruit</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cereza:#c1121f; --cereza-osc:#8b0a14; --cereza-cl:#e85d6a;
+  --verde:#107a3d; --verde-osc:#0a5429; --verde-cl:#d8f0e0;
+  --hoja:#1a9450;
+  --crema:#faf7f2; --papel:#ffffff; --tinta:#1c1917; --tinta-suave:#6b6560;
+  --azul:#1158a6; --azul-cl:#dceafb;
+  --naranja:#d4530f; --morado:#6c3aad; --teal:#0f7a8a; --ambar:#b8860b;
+  --linea:#ece8e1;
+  --sombra:0 1px 3px rgba(28,25,23,.06),0 8px 24px rgba(28,25,23,.05);
+  --sombra-alta:0 4px 12px rgba(28,25,23,.10),0 16px 40px rgba(28,25,23,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Outfit',-apple-system,sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(193,18,31,.05), transparent 40%),
+    radial-gradient(circle at 88% 4%, rgba(16,122,61,.05), transparent 38%),
+    var(--crema);
+  color:var(--tinta);padding:20px 16px;max-width:1040px;margin:0 auto;
+  min-height:100vh;
+}
+.head{display:flex;align-items:center;gap:13px;margin-bottom:4px}
+.head .logo{display:inline-flex;filter:drop-shadow(0 3px 6px rgba(247,181,0,.4));animation:bob 3s ease-in-out infinite}
+.head .logo svg{display:block}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
+h1{font-family:'Fraunces',serif;font-size:25px;font-weight:600;letter-spacing:-.01em;line-height:1.05}
+.sub{font-size:12.5px;color:var(--tinta-suave);margin:3px 0 20px 43px}
+.card{
+  background:var(--papel);border-radius:18px;padding:20px;margin-bottom:15px;
+  border:1px solid var(--linea);box-shadow:var(--sombra);
+  animation:rise .5s cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card h2{
+  font-family:'Fraunces',serif;font-size:13px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--hoja);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.card h2 .n{
+  display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;
+  background:linear-gradient(135deg,var(--hoja),var(--verde-osc));color:#fff;font-family:'Outfit';
+  font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(16,122,61,.3);
+}
+/* Colores distintos por sección */
+.card h2.s1{color:#107a3d} .card h2.s1 .n{background:linear-gradient(135deg,#15a557,#0a5429);box-shadow:0 2px 6px rgba(16,122,61,.35)}
+.card h2.s2{color:#0d4a8f} .card h2.s2 .n{background:linear-gradient(135deg,#2a7fd6,#0d3a72);box-shadow:0 2px 6px rgba(17,88,166,.35)}
+.card h2.s3{color:#8a5a0f} .card h2.s3 .n{background:linear-gradient(135deg,#d99b1f,#8a5a0f);box-shadow:0 2px 6px rgba(184,134,11,.35)}
+.card h2.s4{color:#6c3aad} .card h2.s4 .n{background:linear-gradient(135deg,#8047cc,#4f2a85);box-shadow:0 2px 6px rgba(108,58,173,.35)}
+.card h2.s5{color:#b3121f} .card h2.s5 .n{background:linear-gradient(135deg,#ef5a6a,#b3121f);box-shadow:0 2px 6px rgba(193,18,31,.35)}
+/* Dropzone */
+.drop{
+  border:2.5px dashed #c5dccb;border-radius:16px;padding:42px 20px;text-align:center;
+  background:linear-gradient(180deg,#f8fdf9,#f1faf4);cursor:pointer;transition:.25s cubic-bezier(.2,.7,.3,1);
+  position:relative;overflow:hidden;
+}
+.drop::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(16,122,61,.08),transparent 60%);opacity:0;transition:.3s}
+.drop:hover,.drop.over{border-color:var(--hoja);transform:scale(1.008);box-shadow:inset 0 0 0 1px rgba(16,122,61,.1)}
+.drop:hover::after,.drop.over::after{opacity:1}
+.drop .ic{font-size:42px;margin-bottom:10px;display:block;animation:bob 3s ease-in-out infinite}
+.drop .t{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--verde-osc)}
+.drop .s{font-size:12px;color:var(--tinta-suave);margin-top:5px}
+.loading{display:none;text-align:center;padding:24px;color:var(--tinta-suave);font-size:13px}
+.loading.on{display:block}
+.spin{display:inline-block;width:26px;height:26px;border:3px solid var(--verde-cl);border-top-color:var(--hoja);border-radius:50%;animation:sp .7s linear infinite;margin-bottom:10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{display:none;background:linear-gradient(180deg,#fff0f0,#ffe6e6);color:var(--cereza-osc);border:1px solid #f3b8be;border-radius:12px;padding:13px 15px;font-size:13px;margin-top:12px;font-weight:500}
+.err.on{display:block;animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.hidden{display:none}
+#app{animation:rise .5s both}
+/* Selector productor */
+.prodsel{
+  font-family:'Outfit';font-size:16px;font-weight:600;padding:13px 15px;border-radius:13px;
+  border:2px solid var(--hoja);background:var(--papel);width:100%;color:var(--tinta);cursor:pointer;
+  transition:.2s;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23107a3d' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 15px center;
+}
+.prodsel:focus{outline:none;box-shadow:0 0 0 4px var(--verde-cl)}
+.lotehead{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.chip{
+  display:flex;flex-direction:column;gap:1px;padding:9px 14px;border-radius:11px;
+  background:linear-gradient(180deg,#fbfdfc,#f4f9f6);border:1px solid var(--linea);flex:1;min-width:90px;
+  animation:rise .4s both;
+}
+.chip .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-suave);font-weight:600}
+.chip .v{font-family:'Fraunces',serif;font-size:16px;font-weight:600;color:var(--tinta)}
+.chip.clas{background:linear-gradient(135deg,var(--hoja),var(--verde-osc));border:none}
+.chip.clas .k{color:rgba(255,255,255,.8)}.chip.clas .v{color:#fff}
+/* Tabla calibres */
+.tabla-wrap{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:separate;border-spacing:0 5px;font-size:13px}
+th{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta-suave);font-weight:700;text-align:left;padding:0 10px 4px}
+th.c{text-align:center}th.r{text-align:right}
+tbody tr{background:var(--papel);transition:.3s cubic-bezier(.2,.7,.3,1)}
+tbody tr td{padding:10px;border-top:1px solid var(--linea);border-bottom:1px solid var(--linea)}
+tbody tr td:first-child{border-left:1px solid var(--linea);border-radius:11px 0 0 11px}
+tbody tr td:last-child{border-right:1px solid var(--linea);border-radius:0 11px 11px 0}
+tbody tr:hover{transform:translateX(2px);box-shadow:-3px 0 0 var(--hoja)}
+tbody tr.flash{animation:flash 1s cubic-bezier(.2,.7,.3,1)}
+@keyframes flash{0%{background:#fff7e6;box-shadow:0 0 0 2px var(--ambar)}100%{background:var(--papel);box-shadow:none}}
+td.r{text-align:right;font-variant-numeric:tabular-nums}td.c{text-align:center}
+.cal-name{font-family:'Fraunces',serif;font-weight:700;font-size:15px}
+.kg-val{font-variant-numeric:tabular-nums;font-weight:600;font-size:14px}
+.cero{color:var(--ambar);font-size:9.5px;font-weight:700;display:block}
+/* Tendencia */
+.trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px}
+.trend.up{background:#e6f7ec;color:#0a7a35}
+.trend.down{background:#fdeaea;color:#c1121f}
+.trend.eq{background:#f0eeea;color:#8a847c}
+.trend.new{background:var(--azul-cl);color:var(--azul)}
+.trend .ar{font-size:12px;line-height:1}
+/* Latido (pálpito) — velocidad según magnitud del cambio que viene */
+.trend.pulse{animation:pulse var(--dur,1s) ease-in-out infinite}
+.trend.pulse .ar{display:inline-block;animation:arrowbob var(--dur,1s) ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.12);filter:brightness(1.12)}}
+@keyframes arrowbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.trend.down.pulse .ar{animation:arrowbobdown var(--dur,1s) ease-in-out infinite}
+@keyframes arrowbobdown{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+/* Pills formato */
+.fmtpill{display:inline-block;font-size:11px;font-weight:700;padding:3px 11px;border-radius:9px;color:#fff;letter-spacing:.02em;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.p25{background:linear-gradient(135deg,#15a557,#0d7a3e)}
+.p5{background:linear-gradient(135deg,#ef6820,#c4490a)}
+.p2{background:linear-gradient(135deg,#8047cc,#5e2da3)}
+.p10{background:linear-gradient(135deg,#16a0b3,#0c6675)}
+.p85{background:linear-gradient(135deg,#c79a2e,#94700f)}
+.px{background:linear-gradient(135deg,#a8a29e,#78716c)}
+.envcod{color:#6b6560;font-size:11.5px;font-weight:600;letter-spacing:.02em;display:block;margin-top:3px;font-variant-numeric:tabular-nums}
+.etq{font-size:11px;font-weight:600;color:var(--tinta-suave)}
+.sal{font-family:'Fraunces',serif;font-size:20px;font-weight:700}
+.sal.zero{color:#c9c2bb}
+/* Máquina pills */
+.maqpill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:9px;transition:.3s}
+.m350{background:linear-gradient(135deg,#e3f3e9,#d2ecdb);color:#0a6b35;box-shadow:inset 0 0 0 1px rgba(16,122,61,.15)}
+.m301{background:linear-gradient(135deg,#e0ecfb,#d2e2f9);color:#0d4a8f;box-shadow:inset 0 0 0 1px rgba(17,88,166,.15)}
+.maqpill.pend{background:#fef0db;color:#a96a00}
+/* Botón alternativo */
+.altbtn{
+  font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:8px;border:1.5px solid #d8d3cc;
+  background:var(--papel);color:var(--tinta-suave);cursor:pointer;margin:2px;transition:.2s;
+}
+.altbtn:hover{border-color:var(--naranja);color:var(--naranja);background:#fff8f3;transform:translateY(-1px);box-shadow:0 2px 6px rgba(212,83,15,.15)}
+.altbtn:active{transform:scale(.95)}
+/* Parámetros */
+.controls{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--tinta-suave);margin-bottom:14px}
+.controls label{display:flex;align-items:center;gap:6px;font-weight:500}
+.controls input{width:60px;padding:6px;border:1.5px solid var(--linea);border-radius:8px;text-align:center;font-family:'Outfit';font-weight:600;font-size:13px;transition:.2s}
+.controls input:focus{outline:none;border-color:var(--hoja);box-shadow:0 0 0 3px var(--verde-cl)}
+.khgrid{display:grid;grid-template-columns:auto 1fr 1fr;gap:8px 16px;align-items:center;font-size:12px;max-width:440px;margin-top:4px}
+.khgrid .h{font-size:9.5px;color:var(--tinta-suave);text-transform:uppercase;font-weight:700;letter-spacing:.04em}
+.khgrid input{width:90px;padding:6px 9px;border-radius:8px;border:1.5px solid var(--linea);text-align:center;font-weight:600;font-family:'Outfit';transition:.2s}
+.khgrid input:focus{outline:none;border-color:var(--hoja);box-shadow:0 0 0 3px var(--verde-cl)}
+.khgrid input:disabled{background:#f4f2ee;color:#b0aaa4}
+/* Resumen máquinas */
+.resumen{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:6px}
+@media(max-width:640px){.resumen{grid-template-columns:1fr}}
+.mc{border-radius:15px;padding:17px;position:relative;overflow:hidden;animation:rise .5s both}
+.mc.a{background:linear-gradient(160deg,#f3fbf6,#e9f6ee);border:1px solid #cce8d6}
+.mc.b{background:linear-gradient(160deg,#f2f8ff,#e7f1fd);border:1px solid #cee0f8}
+.mc h3{font-family:'Fraunces',serif;font-size:14px;font-weight:600;margin-bottom:3px;display:flex;justify-content:space-between;align-items:baseline}
+.mc.a h3{color:#0a6b35}.mc.b h3{color:#0d4a8f}
+.mc .cnt{font-family:'Outfit';font-size:13px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.7)}
+.mcsub{font-size:10px;color:var(--tinta-suave);margin-bottom:12px;font-weight:500}
+.mbar{height:6px;border-radius:3px;background:rgba(255,255,255,.6);overflow:hidden;margin-bottom:12px}
+.mbar i{display:block;height:100%;border-radius:3px;transition:width .6s cubic-bezier(.2,.7,.3,1)}
+.mc.a .mbar i{background:linear-gradient(90deg,#15a557,#0a6b35)}
+.mc.b .mbar i{background:linear-gradient(90deg,#2a7fd6,#0d4a8f)}
+.mline{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:6px 0;border-bottom:1px dashed rgba(0,0,0,.08);animation:slidein .4s both}
+.mline:last-child{border:none}
+@keyframes slidein{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.mline b{font-family:'Fraunces',serif}
+.mline .ms{font-weight:700;font-variant-numeric:tabular-nums}
+.empty{color:#bdb7b0;font-size:12px;font-style:italic;padding:8px 0}
+/* Alertas */
+.alerta{margin-top:14px;padding:12px 15px;border-radius:12px;font-size:13px;font-weight:600;display:none;animation:rise .4s both}
+.alerta.falta{display:block;background:linear-gradient(180deg,#fff0f0,#ffe6e6);color:var(--cereza-osc);border:1px solid #f3b8be}
+.alerta.ok{display:block;background:linear-gradient(180deg,#e8f7ee,#dcf2e4);color:#0a5429;border:1px solid #b5ddc3}
+.alerta.warn{display:block;background:linear-gradient(180deg,#fff6e6,#fdeccf);color:#9a6000;border:1px solid #f0d29a}
+.note{font-size:11px;color:var(--tinta-suave);margin-top:12px;line-height:1.55}
+/* Detalles / paneles */
+details{margin-top:12px;border-top:1px solid var(--linea);padding-top:10px}
+summary{cursor:pointer;color:var(--hoja);font-weight:600;font-size:12.5px;list-style:none;display:flex;align-items:center;gap:6px;transition:.2s}
+summary::-webkit-details-marker{display:none}
+summary::before{content:'⚙';transition:transform .3s}
+details[open] summary::before{transform:rotate(90deg)}
+summary:hover{color:var(--verde-osc)}
+.codtable td{padding:4px 8px;border:none}.codtable input{width:58px;padding:4px;border:1.5px solid var(--linea);border-radius:7px;text-align:center;font-family:'Outfit';font-weight:600}
+.revtable td{font-size:12px;padding:5px 8px}.revtable select{padding:4px 8px;border-radius:8px;border:1.5px solid var(--linea);font-family:'Outfit';font-weight:600;cursor:pointer}
+.revtable th{padding:4px 8px}
+.reload{font-family:'Outfit';font-size:12.5px;color:var(--hoja);cursor:pointer;font-weight:600;float:right;display:flex;align-items:center;gap:5px;transition:.2s;padding:4px 10px;border-radius:8px}
+.reload:hover{background:var(--verde-cl);transform:translateX(-2px)}
+/* ===== RESPONSIVE: tablet y celular ===== */
+@media(max-width:768px){
+  body{padding:14px 11px}
+  h1{font-size:21px}
+  .sub{margin-left:0;font-size:12px}
+  .card{padding:16px;border-radius:15px}
+  .chip{min-width:calc(50% - 5px)} /* 2 chips por fila en tablet */
+  /* botones y selects más cómodos al tacto */
+  .prodsel{font-size:16px;padding:14px}
+  .altbtn{padding:8px 12px;font-size:12px}
+  summary{padding:8px 0;font-size:13.5px}
+}
+@media(max-width:560px){
+  body{padding:11px 8px}
+  .head{gap:10px}
+  .head .logo{font-size:26px}
+  h1{font-size:18px;line-height:1.1}
+  .sub{font-size:11px;margin-bottom:16px}
+  .card{padding:13px;border-radius:14px;margin-bottom:11px}
+  .card h2{font-size:12px}
+  .chip{min-width:100%;flex-direction:row;justify-content:space-between;align-items:center;padding:10px 13px}
+  .chip .v{font-size:14px}
+  .chip.clas .v{font-size:15px}
+  /* tabla -> tarjetas apiladas en celular */
+  table,thead,tbody,th,td,tr{display:block}
+  thead{display:none}
+  tbody tr{
+    border:1px solid var(--linea);border-radius:13px;margin-bottom:10px;padding:11px 13px;
+    box-shadow:var(--sombra);
+  }
+  tbody tr:hover{transform:none;box-shadow:var(--sombra)}
+  tbody tr td{
+    border:none!important;padding:5px 0;display:flex;justify-content:space-between;align-items:center;
+    gap:10px;text-align:right;
+  }
+  tbody tr td::before{
+    content:attr(data-lbl);font-size:10px;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--tinta-suave);font-weight:700;text-align:left;flex-shrink:0;
+  }
+  tbody tr td:first-child{border-radius:0;padding-bottom:8px;margin-bottom:4px;border-bottom:1px dashed var(--linea)!important}
+  .cal-name{font-size:18px}
+  /* botones alternativos grandes y táctiles */
+  .altbtn{padding:9px 14px;font-size:13px;min-height:38px}
+  .controls{gap:11px}
+  .controls label{flex:1;min-width:calc(50% - 6px);justify-content:space-between}
+  .controls input{width:64px;padding:9px;font-size:15px}
+  .khgrid{max-width:100%}
+  .khgrid input{width:100%;padding:9px;font-size:15px}
+  .resumen{grid-template-columns:1fr}
+  .maqpill{padding:6px 11px;font-size:12px}
+  .reload{padding:7px 12px;font-size:13px}
+  /* inputs táctiles mínimo 16px para no hacer zoom en iOS */
+  input,select{font-size:16px!important}
+}
+/* Mejoras táctiles generales (cualquier pantalla táctil) */
+@media(hover:none){
+  .altbtn{min-height:40px;padding:9px 14px}
+  summary{min-height:40px;display:flex;align-items:center}
+  .prodsel{min-height:48px}
+  tbody tr:hover{transform:none}
+  .reload{min-height:40px}
+}
+</style>
+</head>
+<body>
+<div class="head">
+  <span class="logo"><svg viewBox="0 0 64 64" width="46" height="46" xmlns="http://www.w3.org/2000/svg" aria-label="DSGF">
+    <defs>
+      <linearGradient id="oroLogo" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffd54a"/><stop offset=".5" stop-color="#f7b500"/><stop offset="1" stop-color="#e89400"/>
+      </linearGradient>
+      <radialGradient id="cerLogo" cx=".35" cy=".3" r=".8">
+        <stop offset="0" stop-color="#ef5a6a"/><stop offset="1" stop-color="#b3121f"/>
+      </radialGradient>
+    </defs>
+    <!-- moneda dorada -->
+    <circle cx="32" cy="32" r="30" fill="url(#oroLogo)" stroke="#c47a00" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="24.5" fill="none" stroke="#fff3c4" stroke-width="1.4" opacity=".7"/>
+    <!-- letras DSGF -->
+    <g fill="#7a4a00" font-family="Georgia,'Times New Roman',serif" font-weight="bold" font-size="13" text-anchor="middle">
+      <text x="32" y="16">D</text>
+      <text x="14.5" y="37">S</text>
+      <text x="49.5" y="37">G</text>
+      <text x="32" y="57">F</text>
+    </g>
+    <!-- cereza al medio -->
+    <g>
+      <path d="M32 26 C30 22 33 19 36 20" fill="none" stroke="#3a7d34" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M32 26 C34 23 38 22 41 24" fill="none" stroke="#3a7d34" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="29.5" cy="33" r="6" fill="url(#cerLogo)"/>
+      <circle cx="38" cy="34" r="6" fill="url(#cerLogo)"/>
+      <ellipse cx="27.5" cy="31" rx="1.8" ry="1.2" fill="#fff" opacity=".55"/>
+      <ellipse cx="36" cy="32" rx="1.8" ry="1.2" fill="#fff" opacity=".55"/>
+      <path d="M40 23 q4 -3 7 -1" fill="none" stroke="#3a7d34" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+  </svg></span>
+  <div>
+    <h1>Distribuidor de Salidas</h1>
+  </div>
+</div>
+<div class="sub">Garces Fruit · Línea 7 — carga el instructivo y la app distribuye las salidas</div>
+
+<div class="card" id="cardCarga">
+  <h2 class="s1"><span class="n">1</span> Cargar instructivo</h2>
+  <div class="drop" id="drop">
+    <span class="ic">🍒</span>
+    <div class="t">Arrastra el PDF aquí o haz clic para elegir</div>
+    <div class="s">Instructivo de embalaje · GF-IND-PL-003</div>
+  </div>
+  <input type="file" id="file" accept="application/pdf" class="hidden">
+  <div class="loading" id="loading"><div class="spin"></div><div>Leyendo el instructivo…</div></div>
+  <div class="err" id="err"></div>
+</div>
+
+<div id="app" class="hidden">
+  <div class="card">
+    <h2 class="s2"><span class="n">2</span> Productor <span class="reload" onclick="resetApp()">↻ Otro PDF</span></h2>
+    <select class="prodsel" id="prodsel" onchange="cargar()"></select>
+    <div class="lotehead" id="lotehead"></div>
+  </div>
+
+  <div class="card"><h2 class="s3"><span class="n">3</span> Detalle por calibre</h2>
+    <div class="tabla-wrap">
+    <table><thead><tr>
+      <th>Calibre</th><th class="r">Kg estim.</th><th>Envase</th><th>Etiqueta</th>
+      <th class="c">Salidas</th><th class="c">Ubicación</th><th>Alternativa</th>
+    </tr></thead><tbody id="tbody"></tbody></table>
+    </div>
+    <div class="note" id="nota_cal"></div>
+  </div>
+
+  <div class="card"><h2 class="s4"><span class="n">4</span> Parámetros</h2>
+    <div class="controls"><span style="font-weight:600">Salidas:</span>
+      <label>AC350 <input id="m350" type="number" value="24" oninput="calc()"></label>
+      <label>AC301 <input id="m301" type="number" value="22" oninput="calc()"></label>
+      <label>Tope 2,5kg <input id="tope25" type="number" value="12" oninput="calc()"></label>
+      <label>Tope 2/5kg <input id="tope2" type="number" value="12" oninput="calc()"></label>
+      <label>Umbral kg <input id="umbral" type="number" value="600" oninput="calc()"></label>
+    </div>
+    <div class="khgrid">
+      <div class="h">Formato</div><div class="h">kg/h AC350</div><div class="h">kg/h AC301</div>
+      <div>2,5 kg</div><input id="kh25_350" type="number" value="1200" oninput="calc()"><input id="kh25_301" type="number" value="250" oninput="calc()">
+      <div>5 kg</div><input id="kh5_350" type="number" value="1200" oninput="calc()"><input id="kh5_301" type="number" value="600" oninput="calc()">
+      <div>2 kg</div><input id="kh2_350" type="number" value="750" oninput="calc()"><input id="kh2_301" type="number" value="0" disabled>
+      <div>10 kg</div><input id="kh10_350" type="number" value="0" disabled><input id="kh10_301" type="number" value="1000" oninput="calc()">
+    </div>
+    <div class="note">El 2 kg solo va a AC350. El 10 kg solo a AC301. El 5 kg entra a AC350 solo si es mayoritario y no hay pedido de 2 kg.</div>
+  </div>
+
+  <div class="card"><h2 class="s5"><span class="n">5</span> Resumen por máquina</h2>
+    <div class="resumen">
+      <div class="mc a"><h3>AC350 <span class="cnt" id="cnt350">0/24</span></h3><div class="mcsub">Mayoritarios · 2,5kg lado A · 2/5kg lado B</div><div class="mbar"><i id="bar350"></i></div><div id="lst350"></div></div>
+      <div class="mc b"><h3>AC301 <span class="cnt" id="cnt301">0/22</span></h3><div class="mcsub">Desahogo · excedente, poco volumen y 10 kg</div><div class="mbar"><i id="bar301"></i></div><div id="lst301"></div></div>
+    </div>
+    <div class="alerta" id="alerta"></div>
+    <div class="note" id="note"></div>
+  </div>
+
+  <div class="card">
+    <details><summary>Revisar / corregir Clas de las órdenes</summary><table class="revtable" id="revtable"></table>
+      <div class="note">Si la lectura asignó mal una Clas, corrígela aquí.</div></details>
+    <details><summary>Tabla código → formato (editable)</summary><table class="codtable" id="codtable"></table></details>
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let COD_FMT={"C0535102":"2.5","C0535100":"2.5","C2532098":"2.5","P2532103":"2.5","C0535103":"5","C0546070":"5",
+ "C0535096":"5","C0635120":"2","P0232087":"2","P1035140":"10","P1035150":"10","C8535133":"8.5","C9546123":"9.5"};
+
+const CALSET=['L','LD','XL','XLD','J','JD','JDD','2J','2JD','2JDD','3J','3JD','3JDD','4J','4JD','4JDD','5J','5JD','5JDD'];
+const CALSETS=new Set(CALSET);
+const ORDEN=CALSET;
+const FMTLBL={"2.5":"2,5 kg","5":"5 kg","2":"2 kg","10":"10 kg","8.5":"8,5 kg","9.5":"9,5 kg"};
+const FMTCLS={"2.5":"p25","5":"p5","2":"p2","10":"p10","8.5":"p85"};
+const fmtN=n=>Math.round(n).toLocaleString('es-CL');
+
+let DATA={lotes:[],ordenes:[]};
+let ORDENES=[], asign={};
+
+// ---------- Extracción (replica la lógica validada) ----------
+function agruparFilas(items, ymin, ymax){
+  // agrupa items por línea (y similar) dentro de un rango vertical
+  const filt=items.filter(it=>it.y>=ymin && it.y<=ymax);
+  filt.sort((a,b)=>a.y-b.y || a.x-b.x);
+  const lineas=[];
+  filt.forEach(it=>{
+    let L=lineas.find(l=>Math.abs(l.y-it.y)<4);
+    if(!L){L={y:it.y,items:[]};lineas.push(L);}
+    L.items.push(it);
+  });
+  lineas.forEach(l=>l.items.sort((a,b)=>a.x-b.x));
+  lineas.sort((a,b)=>a.y-b.y);
+  return lineas;
+}
+function parseCalibres(txt){
+  const out=[];
+  txt.split(/\s+/).forEach(tok=>tok.split('-').forEach(p=>{
+    p=p.trim().replace(/^(\d)DD$/,'$1JDD');
+    if(CALSETS.has(p)&&!out.includes(p))out.push(p);
+  }));
+  return out;
+}
+
+function normCal(s){return s.replace('%','').trim();}
+function extraer(items){
+  let lotes=[], ordenes=[];
+  // --- HEADER de la curva: detectar aunque venga partido en 2 líneas ---
+  // agrupar por banda Y fina
+  const bandas={};
+  items.forEach(it=>{const k=Math.round(it.y/2.5);(bandas[k]=bandas[k]||[]).push(it);});
+  const keys=Object.keys(bandas).map(Number).sort((a,b)=>a-b);
+  let colX={}, yH=null;
+  for(let i=0;i<keys.length;i++){
+    const combo=bandas[keys[i]].concat(bandas[keys[i+1]]||[]);
+    const cx={};
+    combo.forEach(it=>{const n=normCal(it.str); if(CALSETS.has(n)&&!(n in cx))cx[n]=it.x;});
+    // fusionar fragmentos partidos: '?JD' + 'D' contiguo -> '?JDD'
+    combo.forEach(it=>{ if(it.str==='D'){ combo.forEach(it2=>{ const b=normCal(it2.str); if(b.endsWith('JD')&&(it.x-it2.x)>0&&(it.x-it2.x)<8){const c=b+'D'; if(CALSETS.has(c)&&!(c in cx))cx[c]=it2.x;} }); } });
+    if(Object.keys(cx).length>=14){colX=cx;yH=bandas[keys[i]][0].y;break;}
+  }
+  if(yH===null) return {lotes:[],ordenes:[]};
+  // recuperar calibres faltantes por interpolación
+  if(!('3JDD' in colX)&&('3JD' in colX)&&('4J' in colX))colX['3JDD']=(colX['3JD']+colX['4J'])/2;
+  if(!('5JDD' in colX)&&('5JD' in colX))colX['5JDD']=colX['5JD']+(('5J' in colX)?(colX['5JD']-colX['5J']):12);
+
+  const CAL=CALSET;
+  // límite inferior: header de ÓRDENES real (línea con ENVASE Y CALIBRES juntos, debajo de la curva)
+  let yLim=99999;
+  for(let i=0;i<keys.length;i++){
+    const yy=bandas[keys[i]][0].y;
+    if(yy<=yH+10)continue;
+    const txt=bandas[keys[i]].map(it=>normCal(it.str).toUpperCase()).join(' ');
+    if(txt.includes('ENVASE')&&txt.includes('CALIBRES')){yLim=yy;break;}
+  }
+  // lotes: números 3-4 dígitos a la izquierda, dentro de la curva
+  const lotesY=items.filter(it=>/^\d{3,4}$/.test(it.str)&&it.x<95&&it.y>yH&&it.y<yLim);
+  const crudos=[];
+  lotesY.forEach(ly=>{
+    const fila=items.filter(it=>Math.abs(it.y-ly.y)<3.5);
+    const cal={};
+    Object.keys(colX).forEach(c=>{
+      let best=null,bd=7;
+      fila.forEach(it=>{const s=it.str.replace(/\./g,'').replace(',','.'); if(/^\d+(\.\d+)?$/.test(s)){const d=Math.abs(it.x-colX[c]); if(d<bd){bd=d;best=it;}}});
+      let v=best?(parseFloat(best.str.replace(/\./g,'').replace(',','.'))||0):0;
+      if(best&&best.str.replace(/[.,]/g,'').length>=6&&v>50000)v=0; // número pegado anómalo
+      cal[c]=v;
+    });
+    const xCalMin=Math.min(...Object.values(colX));
+    // textos a la izquierda de los calibres, ordenados por X
+    const textosIzq=fila.filter(it=>/[A-Za-zÁ-úñÑ]/.test(it.str)&&it.x<xCalMin).sort((a,b)=>a.x-b.x);
+    // CSG = número largo (5-7 díg) a la izquierda; el productor viene justo después
+    const csg=fila.filter(it=>/^\d{5,7}$/.test(it.str)&&it.x<xCalMin).sort((a,b)=>a.x-b.x)[0];
+    const xCSG=csg?csg.x:130;
+    // variedad comercial: segundo bloque de texto (tras la variedad real). Tomamos el texto más a la izquierda como variedad
+    const variedad=textosIzq.length?textosIzq[0].str:'';
+    // productor: textos cuya X está entre el CSG y el tipo de envase (Minibins) — excluye variedades y 'Minibins'
+    const xEnvaseTipo=(fila.find(it=>/MINIBINS|BINS|CAJA/i.test(it.str))||{}).x || (xCalMin-60);
+    const prodToks=textosIzq.filter(t=>t.x>xCSG && t.x<xEnvaseTipo-2 && !/MINIBINS|BINS/i.test(t.str));
+    const productor=(prodToks.map(t=>t.str).join(' ').trim())||('Lote '+ly.str);
+    // Clas: dígito 1-9 solo, ubicado tras el tipo de envase (Minibins) y antes de SolSol/calibres
+    let clas='';
+    const cc=fila.filter(it=>/^[1-9]$/.test(it.str)&&it.x>(xEnvaseTipo)&&it.x<xCalMin-3).sort((a,b)=>a.x-b.x);
+    if(cc.length)clas=cc[0].str;
+    if(!clas){ // respaldo: último dígito 1-9 antes de calibres
+      const c2=fila.filter(it=>/^[1-9]$/.test(it.str)&&it.x<xCalMin-3&&it.x>200);
+      if(c2.length)clas=c2[c2.length-1].str;
+    }
+    // Kilos Neto: número (puede tener decimales) entre el productor y el tipo de envase (Minibins)
+    let kilos=0;
+    const parseKg=s=>{
+      // "1299.4" -> 1299.4 (decimal) ; "9475" -> 9475 ; "17.560" -> 17560 (miles)
+      s=s.trim();
+      if(/^\d+\.\d{1,2}$/.test(s))return parseFloat(s);        // punto decimal (1-2 dec)
+      if(/^\d+,\d{1,2}$/.test(s))return parseFloat(s.replace(',','.')); // coma decimal
+      return parseFloat(s.replace(/[.,]/g,''))||0;             // separador de miles
+    };
+    const numsAntesEnvase=fila.filter(it=>/^[\d.,]+$/.test(it.str)&&it.x>xCSG&&it.x<xEnvaseTipo-2)
+      .map(it=>({x:it.x,v:parseKg(it.str)})).sort((a,b)=>a.x-b.x);
+    if(numsAntesEnvase.length){kilos=Math.max(...numsAntesEnvase.map(n=>n.v));}
+    crudos.push({lote:ly.str,variedad,productor,clas,kilos_total:kilos,calibres:cal});
+  });
+  // consolidar duplicados: mismo lote+productor+variedad+clas -> sumar calibres
+  const mapa={};
+  crudos.forEach(L=>{
+    const key=L.lote+'|'+L.productor+'|'+L.variedad+'|'+L.clas;
+    if(!mapa[key])mapa[key]=L;
+    else{ Object.keys(L.calibres).forEach(c=>{mapa[key].calibres[c]=(mapa[key].calibres[c]||0)+(L.calibres[c]||0);}); mapa[key].kilos_total=(mapa[key].kilos_total||0)+(L.kilos_total||0); }
+  });
+  lotes=Object.values(mapa);
+  // --- ÓRDENES ---
+  ordenes=extraerOrdenes(items);
+  return {lotes,ordenes};
+}
+
+function extraerOrdenes(items){
+  const lineasAll=agruparFilas(items,0,99999);
+  let yOrd=null, cols={};
+  for(const l of lineasAll){
+    const txt=l.items.map(i=>i.str.toUpperCase()).join(' ');
+    if(txt.includes('ENVASE')&&txt.includes('CALIBRE')){
+      yOrd=l.y;
+      l.items.forEach(it=>{const u=it.str.toUpperCase();
+        if(u==='ORDEN')cols.orden=it.x;
+        if(u==='ENVASE')cols.env=it.x;
+        if(u==='EMBALAJE')cols.emb=it.x;
+        if(u==='ETIQUETA')cols.etq=it.x;
+        if(u==='CAT')cols.cat=it.x;
+        if(u.startsWith('CALIBRE'))cols.cal=it.x;
+        if(u.startsWith('OBSERVAC'))cols.obs=it.x;});
+      break;
+    }
+  }
+  const ordenes=[];
+  if(yOrd===null||cols.env==null||cols.cal==null)return ordenes;
+  const lim=(a,b)=>(a!=null&&b!=null)?(a+b)/2:null;
+  const rEnv=[cols.env-40, lim(cols.env,cols.emb)||cols.env+40];
+  const rEtq=[lim(cols.emb,cols.etq)||cols.etq-30, lim(cols.etq,cols.cat)||cols.etq+45];
+  const rCal=[cols.cal-35, lim(cols.cal,cols.obs)||cols.cal+90];
+  const rObs=[(cols.obs!=null?cols.obs:cols.cal+120)-20, (cols.obs!=null?cols.obs:cols.cal+120)+170];
+  const filt=items.filter(it=>it.y>yOrd+4);
+  filt.sort((a,b)=>a.y-b.y||a.x-b.x);
+  const anclas=filt.filter(it=>/^[CP]\d{6,7}$/.test(it.str)&&it.x>rEnv[0]&&it.x<rEnv[1]);
+  const grab=(y,r)=>filt.filter(it=>Math.abs(it.y-y)<5 && it.x>=r[0] && it.x<=r[1]).sort((a,b)=>a.x-b.x).map(it=>it.str).join(' ').trim();
+  // X de la columna PRIORIDAD: a la izquierda de ORDEN (o de ENVASE si no hay ORDEN)
+  const xOrden=cols.orden!=null?cols.orden:cols.env-60;
+  const filas=[];
+  anclas.forEach(a=>{
+    const envase=a.str;
+    const calibres=parseCalibres(grab(a.y,rCal));
+    const etiqueta=grab(a.y,rEtq).replace(/\s*\d+\s*$/,'').trim();
+    let obs=grab(a.y,rObs);
+    // marca CLAS: 1) en obs; 2) buscar token 'CLAS' + dígito contiguo en toda la fila
+    let marca=null;
+    let m=(obs||'').toUpperCase().match(/CLAS\s*(\d)\b/);
+    if(m)marca=m[1];
+    if(!marca){
+      const filaItems=filt.filter(it=>Math.abs(it.y-a.y)<5).sort((x,y)=>x.x-y.x);
+      for(let i=0;i<filaItems.length;i++){
+        if(filaItems[i].str.toUpperCase()==='CLAS'){
+          // dígito en el mismo token siguiente o contiguo
+          for(let j=i+1;j<filaItems.length;j++){
+            const mm=filaItems[j].str.match(/^(\d)/);
+            if(mm){marca=mm[1];break;}
+          }
+          if(marca)break;
+        }
+        const inl=filaItems[i].str.toUpperCase().match(/CLAS\s*(\d)/);
+        if(inl){marca=inl[1];break;}
+      }
+    }
+    // prioridad: dígito 1-2 solo, a la izquierda de ORDEN, en la banda de la fila
+    const prioM=filt.find(it=>/^[12]$/.test(it.str) && it.x<xOrden-8 && Math.abs(it.y-a.y)<7);
+    filas.push({y:a.y,prio:!!prioM,envase,calibres,etiqueta,obs,marcaFila:marca});
+  });
+  filas.sort((x,y)=>x.y-y.y);
+  // bloques: nueva caja al ver prioridad; la marca CLAS de una fila aplica a su bloque
+  const bloques=[];let cur=null;
+  filas.forEach(r=>{
+    if(r.prio){cur={filas:[],marca:null};bloques.push(cur);}
+    if(!cur){cur={filas:[],marca:null};bloques.push(cur);}
+    cur.filas.push(r);
+    if(r.marcaFila&&COD_FMT[r.envase]!=='8.5')cur.marca=r.marcaFila;
+  });
+  // heredar marca: primero hacia adelante, luego hacia atrás
+  for(let i=0;i<bloques.length;i++){if(!bloques[i].marca){for(let j=i+1;j<bloques.length;j++){if(bloques[j].marca){bloques[i].marca=bloques[j].marca;break;}}}}
+  for(let i=bloques.length-1;i>=0;i--){if(!bloques[i].marca){for(let j=i-1;j>=0;j--){if(bloques[j].marca){bloques[i].marca=bloques[j].marca;break;}}}}
+  let seq=0;
+  bloques.forEach(b=>b.filas.forEach(r=>{
+    if(!r.envase||!r.calibres.length)return;
+    const clas=(r.marcaFila&&COD_FMT[r.envase]==='8.5')?r.marcaFila:b.marca;
+    ordenes.push({clas,envase:r.envase,etiqueta:r.etiqueta,formato:COD_FMT[r.envase]||'?',calibres:r.calibres,seq:seq++});
+  }));
+  return ordenes;
+}
+
+
+// ====== Estado ======
+let lastFmtSig={}; // firma de formato por calibre para detectar cambios (flash)
+
+// ====== Carga de archivo ======
+const drop=document.getElementById('drop'), fileInput=document.getElementById('file');
+drop.onclick=()=>fileInput.click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over');};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])procesar(e.dataTransfer.files[0]);};
+fileInput.onchange=e=>{if(e.target.files[0])procesar(e.target.files[0]);};
+
+function showErr(m){const el=document.getElementById('err');el.textContent='⚠ '+m;el.classList.add('on');document.getElementById('loading').classList.remove('on');}
+function resetApp(){document.getElementById('app').classList.add('hidden');document.getElementById('cardCarga').classList.remove('hidden');document.getElementById('err').classList.remove('on');fileInput.value='';}
+
+async function procesar(file){
+  document.getElementById('err').classList.remove('on');
+  document.getElementById('loading').classList.add('on');
+  if(typeof pdfjsLib==='undefined'){showErr('No se pudo cargar el lector de PDF. Verifica tu conexión a internet e intenta de nuevo.');return;}
+  try{
+    const buf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    const page=await pdf.getPage(1);
+    const tc=await page.getTextContent();
+    const vh=page.getViewport({scale:1}).height;
+    let items=tc.items.map(it=>({str:it.str.trim(),x:it.transform[4],y:vh-it.transform[5]})).filter(it=>it.str!=='');
+    const parsed=extraer(items);
+    if(parsed.lotes.length===0){showErr('No se detectaron lotes en la curva de calibres. ¿Es el instructivo correcto?');return;}
+    DATA=parsed; ORDENES=JSON.parse(JSON.stringify(parsed.ordenes));
+    calcularTendencias();
+    initUI();
+    document.getElementById('loading').classList.remove('on');
+    document.getElementById('cardCarga').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+  }catch(e){console.error(e);showErr('Error al leer el PDF: '+e.message);}
+}
+
+// ====== Tendencia: ANTICIPAR el lote SIGUIENTE (lo que viene) ======
+function calcularTendencias(){
+  DATA.lotes.forEach((L,i)=>{
+    L.tend={};
+    const next=DATA.lotes[i+1]; // el lote que VIENE
+    if(!next){
+      Object.keys(L.calibres).forEach(c=>{L.tend[c]={dir:'end',pct:null,mag:0,viene:null};});
+      return;
+    }
+    const futuro=next.calibres;
+    Object.keys(L.calibres).forEach(c=>{
+      const ahora=L.calibres[c]||0, viene=futuro[c]||0;
+      if(ahora===0&&viene===0){L.tend[c]={dir:'eq',pct:0,mag:0,viene};}
+      else{
+        const dif=viene-ahora;
+        const pct = ahora>0 ? Math.round(dif/ahora*100) : null;
+        let dir='eq';
+        if(dif>0 && (pct===null||pct>=8))dir='up';
+        else if(dif<0 && pct<=-8)dir='down';
+        // magnitud para velocidad del latido: basada en kg que cambian (cap a 800 kg)
+        const mag=Math.min(1,Math.abs(dif)/800);
+        // % topado a ±200 para visualización
+        const pctCap = pct===null?null:Math.max(-200,Math.min(200,pct));
+        const fuerte = pct!==null && Math.abs(pct)>200;
+        L.tend[c]={dir,pct:pctCap,fuerte,mag,viene,dif};
+      }
+    });
+  });
+}
+
+// ====== UI ======
+function initUI(){
+  const sel=document.getElementById('prodsel');sel.innerHTML='';
+  DATA.lotes.forEach((L,i)=>{const o=document.createElement('option');o.value=i;
+    o.textContent=`${L.productor} — Lote ${L.lote}${L.clas?' · Clas '+L.clas:''}`;sel.appendChild(o);});
+  cargar();
+}
+function formatosPorCalibre(clas){
+  const ord=ORDENES.filter(o=>o.clas===clas).sort((a,b)=>a.seq-b.seq);
+  const map={};
+  ord.forEach(o=>{o.calibres.forEach(c=>{
+    if(!map[c])map[c]=[];const f=COD_FMT[o.envase]||'?';
+    if(!map[c].some(x=>x.fmt===f&&x.envase===o.envase))map[c].push({fmt:f,envase:o.envase,etiqueta:o.etiqueta||''});
+  });});
+  return map;
+}
+function cargar(){
+  const L=DATA.lotes[document.getElementById('prodsel').value];
+  if(!L)return;
+  const clasTxt=L.clas||'?';
+  document.getElementById('lotehead').innerHTML=
+    `<div class="chip" style="animation-delay:0s"><span class="k">Lote</span><span class="v">${L.lote}</span></div>`+
+    `<div class="chip" style="animation-delay:.05s"><span class="k">Variedad</span><span class="v">${L.variedad||'—'}</span></div>`+
+    `<div class="chip" style="animation-delay:.1s"><span class="k">Productor</span><span class="v" style="font-size:13px">${L.productor||'—'}</span></div>`+
+    `<div class="chip" style="animation-delay:.13s"><span class="k">Kilos neto</span><span class="v">${L.kilos_total?fmtN(L.kilos_total):'—'}</span></div>`+
+    `<div class="chip clas" style="animation-delay:.15s"><span class="k">Clasificación</span><span class="v">CLAS ${clasTxt}</span></div>`;
+  const fmap=formatosPorCalibre(L.clas);asign={};
+  Object.keys(fmap).filter(c=>ORDEN.includes(c)).sort((a,b)=>ORDEN.indexOf(a)-ORDEN.indexOf(b)).forEach(c=>{
+    asign[c]={kg:L.calibres[c]||0,elegidoIdx:0,opciones:fmap[c]};
+  });
+  lastFmtSig={}; // reset firmas al cambiar de lote
+  renderTabla(L);renderRev();renderCod();calc();
+}
+
+function trendHTML(L,c){
+  if(!L.tend||!L.tend[c])return '';
+  const t=L.tend[c];
+  if(t.dir==='end')return `<span class="trend eq" title="último lote">—</span>`;
+  if(t.dir==='eq')return `<span class="trend eq" title="sin cambio relevante"><span class="ar">▬</span></span>`;
+  const dur=(1.6-1.2*(t.mag||0)).toFixed(2);
+  const cls=t.dir==='up'?'up':'down';
+  const ar=t.dir==='up'?'▲':'▼';
+  // texto: kg que vendrán en el próximo lote (dato real, no % engañoso)
+  const vieneTxt = t.viene!=null ? fmtN(t.viene)+' kg' : '';
+  const fuerteTag = t.fuerte ? '<b style="font-size:9px;margin-left:2px">fuerte</b>' : '';
+  const titulo = `Próximo lote: ${fmtN(t.viene)} kg${t.pct!=null?' ('+(t.pct>0?'+':'')+t.pct+(t.fuerte?'+':'')+'%)':''}`;
+  return `<span class="trend ${cls} pulse" style="--dur:${dur}s" title="${titulo}"><span class="ar">${ar}</span>${vieneTxt}${fuerteTag}</span>`;
+}
+
+function renderTabla(L){
+  const tb=document.getElementById('tbody');tb.innerHTML='';
+  let idx=0;
+  Object.keys(asign).forEach(c=>{
+    const a=asign[c];
+    if(!a.opciones||!a.opciones.length)return;
+    const op=a.opciones[a.elegidoIdx]||a.opciones[0];
+    const fmtTxt=FMTLBL[op.fmt]||'❓ definir';
+    let alt=a.opciones.length>1?a.opciones.map((o,i)=>i===a.elegidoIdx?'':`<button class="altbtn" onclick="setOpt('${c}',${i})">→ ${FMTLBL[o.fmt]||'?'}</button>`).join(''):'<span style="color:#cdc7c0">—</span>';
+    const ceroTag=a.kg===0?'<span class="cero">0 · reserva 1</span>':'';
+    const tr=document.createElement('tr');
+    tr.id='row_'+c;
+    tr.style.animation=`slidein .35s both`; tr.style.animationDelay=(idx*0.03)+'s';
+    // flash si cambió el formato respecto a la firma previa
+    const sig=op.envase+'|'+op.fmt;
+    if(lastFmtSig[c]&&lastFmtSig[c]!==sig)tr.classList.add('flash');
+    lastFmtSig[c]=sig;
+    tr.innerHTML=`
+      <td data-lbl="Calibre"><span class="cal-name">${c}</span></td>
+      <td class="r" data-lbl="Kg estim."><span class="kg-val">${fmtN(a.kg)}</span> ${trendHTML(L,c)}${ceroTag}</td>
+      <td data-lbl="Envase"><span class="fmtpill ${FMTCLS[op.fmt]||'px'}">${fmtTxt}</span><span class="envcod">${op.envase}</span></td>
+      <td data-lbl="Etiqueta"><span class="etq">${op.etiqueta||'—'}</span></td>
+      <td class="c sal" id="sal_${c}" data-lbl="Salidas">—</td>
+      <td class="c" id="maq_${c}" data-lbl="Ubicación">—</td>
+      <td data-lbl="Alternativa">${alt}</td>`;
+    tb.appendChild(tr);idx++;
+  });
+}
+function setOpt(c,i){asign[c].elegidoIdx=i;renderTabla(DATA.lotes[document.getElementById('prodsel').value]);calc();
+  // scroll/flash a la fila cambiada
+  const r=document.getElementById('row_'+c); if(r){r.classList.remove('flash');void r.offsetWidth;r.classList.add('flash');}
+}
+
+function calc(){
+  const g=id=>+document.getElementById(id).value;
+  const kh350={"2.5":g('kh25_350')||1200,"5":g('kh5_350')||1200,"2":g('kh2_350')||750,"8.5":g('kh5_350')||1200,"9.5":g('kh5_350')||1200};
+  const kh301={"2.5":g('kh25_301')||250,"5":g('kh5_301')||600,"2":1,"10":g('kh10_301')||1000,"8.5":g('kh5_301')||600,"9.5":g('kh5_301')||600};
+  const M350=g('m350'),M301=g('m301'),T25=g('tope25'),T2=g('tope2'),UMBRAL=g('umbral')||600;
+  let items=Object.keys(asign).map(c=>{const a=asign[c];if(!a.opciones||!a.opciones.length)return null;const op=a.opciones[a.elegidoIdx]||a.opciones[0];return {cal:c,kg:a.kg,fmt:op.fmt,envase:op.envase,etiqueta:op.etiqueta||''};}).filter(Boolean);
+  items.sort((x,y)=>y.kg-x.kg);
+  let usado25=0,usado2y5=0,libre350=M350,libre301=M301;
+  const hayPedido2=items.some(it=>it.fmt==="2"&&it.kg>0);
+  items.forEach(it=>{
+    it.en350=0;it.en301=0;
+    if(it.fmt==="?"||!it.fmt){it.salTotal=0;it.pendiente=true;return;}
+    if(it.fmt==="10"){const cap=kh301["10"];const n=Math.max(1,Math.ceil(it.kg/cap));it.salTotal=n;it.en301=Math.min(n,libre301);libre301-=it.en301;it.cap301=cap;it.kg301=it.kg;return;}
+    let nec350=Math.max(1,Math.ceil(it.kg/(kh350[it.fmt]||1200)));
+    let permite350=true,tope=0,usadoRef=null;
+    const esMay=it.kg>UMBRAL;
+    if(it.fmt==="2.5"){tope=T25;usadoRef='25';permite350=esMay;}
+    else if(it.fmt==="2"){tope=T2;usadoRef='2y5';permite350=true;}
+    else if(it.fmt==="5"){tope=T2;usadoRef='2y5';permite350=esMay&&!hayPedido2;}
+    else permite350=false;
+    it.cap350=kh350[it.fmt]||1200; it.cap301=kh301[it.fmt]||250;
+    if(permite350){
+      const cupo=tope-(usadoRef==='25'?usado25:usado2y5);
+      const en350=Math.max(0,Math.min(nec350,cupo,libre350));
+      it.en350=en350;libre350-=en350;
+      if(usadoRef==='25')usado25+=en350;else usado2y5+=en350;
+      // kg que cubre AC350 (llenando cada salida hasta su tope)
+      it.kg350=Math.min(it.kg, en350*it.cap350);
+      const kgRest=it.kg-it.kg350;
+      if(kgRest>0&&it.fmt!=="2"){const n301=Math.ceil(kgRest/it.cap301);it.en301=Math.min(n301,libre301);libre301-=it.en301;it.kg301=kgRest;}
+    }else{
+      const n301=Math.max(1,Math.ceil(it.kg/it.cap301));it.en301=Math.min(n301,libre301);libre301-=it.en301;it.kg301=it.kg;
+    }
+    it.salTotal=it.en350+it.en301;
+  });
+  items.forEach(it=>{
+    const sEl=document.getElementById('sal_'+it.cal),mEl=document.getElementById('maq_'+it.cal);
+    if(sEl){sEl.textContent=it.pendiente?'—':it.salTotal;sEl.classList.toggle('zero',it.salTotal===0);}
+    let m='';
+    const kgps=(kg,n)=>n>0?Math.round(kg/n).toLocaleString('es-CL'):0;
+    if(it.pendiente)m='<span class="maqpill pend">⚠ definir</span>';
+    else if(it.en350>0&&it.en301>0)m=`<span class="maqpill m350" title="${it.en350} salida(s), ~${kgps(it.kg350,it.en350)} kg c/u">AC350 ×${it.en350}</span> <span class="maqpill m301" title="${it.en301} salida(s), ~${kgps(it.kg301,it.en301)} kg c/u">AC301 ×${it.en301}</span>`;
+    else if(it.en350>0)m=`<span class="maqpill m350" title="~${kgps(it.kg350,it.en350)} kg por salida">AC350 ×${it.en350} <span style="opacity:.7;font-weight:600">· ${kgps(it.kg350,it.en350)}kg c/u</span></span>`;
+    else if(it.en301>0)m=`<span class="maqpill m301" title="~${kgps(it.kg301,it.en301)} kg por salida">AC301 ×${it.en301} <span style="opacity:.7;font-weight:600">· ${kgps(it.kg301,it.en301)}kg c/u</span></span>`;
+    else m='<span style="color:var(--cereza);font-weight:700">sin cupo</span>';
+    if(mEl)mEl.innerHTML=m;
+  });
+  const kgps=(kg,n)=>n>0?Math.round(kg/n).toLocaleString('es-CL'):0;
+  const l350=items.filter(it=>it.en350>0).map(it=>`<div class="mline"><span><b>${it.cal}</b> · ${FMTLBL[it.fmt]} <span style="color:#857f78;font-size:11px;font-weight:500">${it.etiqueta||it.envase}</span></span><span class="ms">${it.en350} sal · ${kgps(it.kg350,it.en350)}kg c/u</span></div>`).join('');
+  const l301=items.filter(it=>it.en301>0).map(it=>`<div class="mline"><span><b>${it.cal}</b> · ${FMTLBL[it.fmt]} <span style="color:#857f78;font-size:11px;font-weight:500">${it.etiqueta||it.envase}</span></span><span class="ms">${it.en301} sal · ${kgps(it.kg301,it.en301)}kg c/u</span></div>`).join('');
+  document.getElementById('lst350').innerHTML=l350||'<div class="empty">— sin asignaciones —</div>';
+  document.getElementById('lst301').innerHTML=l301||'<div class="empty">— sin asignaciones —</div>';
+  const u350=M350-libre350,u301=M301-libre301;
+  document.getElementById('cnt350').textContent=u350+'/'+M350;
+  document.getElementById('cnt301').textContent=u301+'/'+M301;
+  document.getElementById('bar350').style.width=Math.min(100,u350/M350*100)+'%';
+  document.getElementById('bar301').style.width=Math.min(100,u301/M301*100)+'%';
+  const al=document.getElementById('alerta');
+  const pend=[...new Set(items.filter(it=>it.pendiente).map(it=>it.envase))];
+  if(pend.length){al.className='alerta warn';al.textContent='⚠ Envase(s) sin formato definido: '+pend.join(', ')+'. Asígnalos en "Tabla código → formato".';}
+  else if(items.some(it=>it.salTotal===0)){al.className='alerta falta';al.textContent='⚠ Hay calibres sin cupo. Revisa topes o kg/h.';}
+  else if(usado25>T25||usado2y5>T2){al.className='alerta warn';al.textContent='⚠ Se superó un tope de AC350.';}
+  else{al.className='alerta ok';al.textContent=`✓ Todo asignado. AC350: ${u350}/${M350} (2,5kg ${usado25}/${T25}, 2/5kg ${usado2y5}/${T2}) · AC301: ${u301}/${M301}.`;}
+  document.getElementById('note').textContent=`Mayoritarios (>${UMBRAL} kg) entran a AC350 llenando cada salida hasta su tope; poco volumen, excedente y 10 kg a AC301. El 2 kg siempre AC350. Las flechas ▲▼ laten anticipando el PRÓXIMO lote: cuanto más rápido el pálpito, mayor el cambio que viene — prepárate con esos calibres y envases.`;
+}
+
+function renderRev(){
+  const L=DATA.lotes[document.getElementById('prodsel').value];
+  const t=document.getElementById('revtable');t.innerHTML='<tr><th>Envase</th><th>Formato</th><th>Etiqueta</th><th>Calibres</th><th>Clas</th></tr>';
+  const clasesPresentes=[...new Set(ORDENES.map(o=>o.clas).filter(Boolean))];
+  ORDENES.slice().sort((a,b)=>a.seq-b.seq).forEach((o,i)=>{
+    const tr=document.createElement('tr');
+    const opts=clasesPresentes.map(c=>`<option ${o.clas===c?'selected':''}>${c}</option>`).join('');
+    tr.innerHTML=`<td>${o.envase}</td><td>${FMTLBL[o.formato]||o.formato}</td><td>${o.etiqueta||'—'}</td><td>${o.calibres.join('-')}</td>
+      <td><select onchange="ORDENES[${i}].clas=this.value;cargar()">${opts}</select></td>`;
+    if(L&&o.clas===L.clas)tr.style.background='#f0faf4';t.appendChild(tr);
+  });
+}
+function renderCod(){
+  const t=document.getElementById('codtable');t.innerHTML='';
+  const envasesPDF=[...new Set(ORDENES.map(o=>o.envase))];
+  const nuevos=envasesPDF.filter(e=>e&&!(e in COD_FMT));
+  if(nuevos.length){
+    const h=document.createElement('tr');h.innerHTML=`<td colspan="2" style="color:#a96a00;font-weight:700;padding-top:4px">⚠ Envases nuevos — asígnales formato:</td>`;t.appendChild(h);
+    nuevos.forEach(c=>{const tr=document.createElement('tr');tr.style.background='#fff8ec';
+      tr.innerHTML=`<td><b>${c}</b></td><td><input placeholder="? kg" value="${COD_FMT[c]||''}" onchange="COD_FMT['${c}']=this.value;cargar()"> kg</td>`;t.appendChild(tr);});
+    const sep=document.createElement('tr');sep.innerHTML='<td colspan="2" style="border-bottom:1px solid #ddd"></td>';t.appendChild(sep);
+  }
+  Object.keys(COD_FMT).forEach(c=>{const tr=document.createElement('tr');
+    tr.innerHTML=`<td><b>${c}</b></td><td><input value="${COD_FMT[c]}" onchange="COD_FMT['${c}']=this.value;cargar()"> kg</td>`;t.appendChild(tr);});
+}
+
+</script>
+</body>
+</html>
