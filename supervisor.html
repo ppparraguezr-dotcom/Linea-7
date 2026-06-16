@@ -574,7 +574,7 @@ function upd(){
 
   // Barras
   document.getElementById('bra').style.width=Math.round(sA/M350*100)+'%';
-  document.getElementById('brh').style.width=Math.round(hueco/M350*100)+'%';
+  document.getElementById('brh').style.width=Math.round(Math.max(0,M350-sA-sB-sC)/M350*100)+'%';
   document.getElementById('brc').style.width=Math.round(sC/M350*100)+'%';
   document.getElementById('brb').style.width=Math.round(sB/M350*100)+'%';
   document.getElementById('brr').style.width=Math.round(1/M350*100)+'%';
